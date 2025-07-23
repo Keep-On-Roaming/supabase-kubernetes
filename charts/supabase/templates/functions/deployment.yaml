@@ -39,46 +39,48 @@ spec:
           image: "{{ .Values.functions.image.repository }}:{{ .Values.functions.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.functions.image.pullPolicy }}
           env:
-            {{- range $key, $value := .Values.functions.environment }}
-            - name: {{ $key }}
-              value: {{ $value | quote }}
-            {{- end }}
             - name: DB_HOSTNAME
               {{- if .Values.db.enabled }}
-              value: {{ include "supabase.db.fullname" . }}
+              value: {{ include "supabase.db.fullname" . | quote }}
+              {{- else if .Values.secret.db.host }}
+              value: {{ .Values.secret.db.host | quote }}
               {{- else }}
-              value: $(DB_HOST)
+              value: {{ .Values.functions.environment.DB_HOST | quote }}
               {{- end }}
+            - name: DB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.secret.db.postgres.secretRef }}
+                  name: {{ .Values.secret.db.postgres.secretRef }}
+                  key: {{ .Values.secret.db.postgres.secretRefKey.database | default "database" }}
+                  {{- else }}
+                  name: {{ include "supabase.secret.db.postgres" . }}
+                  key: database
+                  {{- end }}
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  {{- if .Values.secret.db.secretRef }}
-                  name: {{ .Values.secret.db.secretRef }}
-                  key: {{ .Values.secret.db.secretRefKey.password | default "password" }}
+                  {{- if .Values.secret.db.postgres.secretRef }}
+                  name: {{ .Values.secret.db.postgres.secretRef }}
+                  key: {{ .Values.secret.db.postgres.secretRefKey.password | default "password" }}
                   {{- else }}
-                  name: {{ include "supabase.secret.db" . }}
+                  name: {{ include "supabase.secret.db.postgres" . }}
                   key: password
                   {{- end }}
             - name: DB_PASSWORD_ENC
               valueFrom:
                 secretKeyRef:
-                  {{- if .Values.secret.db.secretRef }}
-                  name: {{ .Values.secret.db.secretRef }}
-                  key: {{ .Values.secret.db.secretRefKey.password | default "password" }}
+                  {{- if .Values.secret.db.postgres.secretRef }}
+                  name: {{ .Values.secret.db.postgres.secretRef }}
+                  key: {{ .Values.secret.db.postgres.secretRefKey.password | default "password" }}
                   {{- else }}
-                  name: {{ include "supabase.secret.db" . }}
+                  name: {{ include "supabase.secret.db.postgres" . }}
                   key: password_encoded
                   {{- end }}
-            - name: DB_DATABASE
-              valueFrom:
-                secretKeyRef:
-                  {{- if .Values.secret.db.secretRef }}
-                  name: {{ .Values.secret.db.secretRef }}
-                  key: {{ .Values.secret.db.secretRefKey.database | default "database" }}
-                  {{- else }}
-                  name: {{ include "supabase.secret.db" . }}
-                  key: database
-                  {{- end }}
+            {{- range $key, $value := .Values.functions.environment }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:

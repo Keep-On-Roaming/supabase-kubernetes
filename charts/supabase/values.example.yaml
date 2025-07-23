@@ -12,9 +12,14 @@ secret:
   analytics:
     apiKey: your-super-secret-and-long-logflare-key
   db:
-    username: postgres
-    password: example123456
-    database: postgres
+    postgres:
+      username: postgres
+      password: example123456
+      database: postgres
+    superuser:
+      username: supabase_admin
+      password: example123456
+      database: postgres
 
 studio:
   image:
@@ -71,6 +76,8 @@ rest:
     tag: v12.2.8
 
 realtime:
+  environment:
+    APP_NAME: example
   image:
     tag: v2.34.31
   livenessProbe:
