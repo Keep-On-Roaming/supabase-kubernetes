@@ -37,17 +37,19 @@ spec:
             - name: DB_HOST
               {{- if .Values.db.enabled }}
               value: {{ include "supabase.db.fullname" . | quote }}
+              {{- else if .Values.secret.db.host }}
+              value: {{ .Values.secret.db.host | quote }}
               {{- else }}
-              value: {{ .Values.auth.environment.DB_HOST | quote }}
+              value: {{ .Values.storage.environment.DB_HOST | quote }}
               {{- end }}
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
-                  {{- if .Values.secret.db.secretRef }}
-                  name: {{ .Values.secret.db.secretRef }}
-                  key: {{ .Values.secret.db.secretRefKey.username | default "username" }}
+                  {{- if .Values.secret.db.postgres.secretRef }}
+                  name: {{ .Values.secret.db.postgres.secretRef }}
+                  key: {{ .Values.secret.db.postgres.secretRefKey.username | default "username" }}
                   {{- else }}
-                  name: {{ include "supabase.secret.db" . }}
+                  name: {{ include "supabase.secret.db.postgres" . }}
                   key: username
                   {{- end }}
             - name: DB_PORT
@@ -105,6 +107,44 @@ spec:
           image: "{{ .Values.storage.image.repository }}:{{ .Values.storage.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.storage.image.pullPolicy }}
           env:
+            - name: DB_HOST
+              {{- if .Values.db.enabled }}
+              value: {{ include "supabase.db.fullname" . | quote }}
+              {{- else if .Values.secret.db.host }}
+              value: {{ .Values.secret.db.host | quote }}
+              {{- else }}
+              value: {{ .Values.storage.environment.DB_HOST | quote }}
+              {{- end }}
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.secret.db.postgres.secretRef }}
+                  name: {{ .Values.secret.db.postgres.secretRef }}
+                  key: {{ .Values.secret.db.postgres.secretRefKey.database | default "database" }}
+                  {{- else }}
+                  name: {{ include "supabase.secret.db.postgres" . }}
+                  key: database
+                  {{- end }}
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.secret.db.postgres.secretRef }}
+                  name: {{ .Values.secret.db.postgres.secretRef }}
+                  key: {{ .Values.secret.db.postgres.secretRefKey.password | default "password" }}
+                  {{- else }}
+                  name: {{ include "supabase.secret.db.postgres" . }}
+                  key: password
+                  {{- end }}
+            - name: DB_PASSWORD_ENC
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.secret.db.postgres.secretRef }}
+                  name: {{ .Values.secret.db.postgres.secretRef }}
+                  key: {{ .Values.secret.db.postgres.secretRefKey.password | default "password" }}
+                  {{- else }}
+                  name: {{ include "supabase.secret.db.postgres" . }}
+                  key: password_encoded
+                  {{- end }}
             {{- if .Values.rest.enabled }}
             - name: POSTGREST_URL
               value: http://{{ include "supabase.rest.fullname" . }}:{{ .Values.rest.service.port }}

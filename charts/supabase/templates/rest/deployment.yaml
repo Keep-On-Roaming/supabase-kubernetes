@@ -35,6 +35,44 @@ spec:
           image: "{{ .Values.rest.image.repository }}:{{ .Values.rest.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.rest.image.pullPolicy }}
           env:
+            - name: DB_HOST
+              {{- if .Values.db.enabled }}
+              value: {{ include "supabase.db.fullname" . | quote }}
+              {{- else if .Values.secret.db.host }}
+              value: {{ .Values.secret.db.host | quote }}
+              {{- else }}
+              value: {{ .Values.rest.environment.DB_HOST | quote }}
+              {{- end }}
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.secret.db.postgres.secretRef }}
+                  name: {{ .Values.secret.db.postgres.secretRef }}
+                  key: {{ .Values.secret.db.postgres.secretRefKey.database | default "database" }}
+                  {{- else }}
+                  name: {{ include "supabase.secret.db.postgres" . }}
+                  key: database
+                  {{- end }}
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.secret.db.postgres.secretRef }}
+                  name: {{ .Values.secret.db.postgres.secretRef }}
+                  key: {{ .Values.secret.db.postgres.secretRefKey.password | default "password" }}
+                  {{- else }}
+                  name: {{ include "supabase.secret.db.postgres" . }}
+                  key: password
+                  {{- end }}
+            - name: DB_PASSWORD_ENC
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.secret.db.postgres.secretRef }}
+                  name: {{ .Values.secret.db.postgres.secretRef }}
+                  key: {{ .Values.secret.db.postgres.secretRefKey.password | default "password" }}
+                  {{- else }}
+                  name: {{ include "supabase.secret.db.postgres" . }}
+                  key: password_encoded
+                  {{- end }}
             - name: PGRST_JWT_SECRET
               valueFrom:
                 secretKeyRef:

@@ -28,11 +28,11 @@ spec:
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
-                  {{- if .Values.secret.db.secretRef }}
-                  name: {{ .Values.secret.db.secretRef }}
-                  key: {{ .Values.secret.db.secretRefKey.username | default "username" }}
+                  {{- if .Values.secret.db.postgres.secretRef }}
+                  name: {{ .Values.secret.db.postgres.secretRef }}
+                  key: {{ .Values.secret.db.postgres.secretRefKey.username | default "username" }}
                   {{- else }}
-                  name: {{ include "supabase.secret.db" . }}
+                  name: {{ include "supabase.secret.db.postgres" . }}
                   key: username
                   {{- end }}
             - name: DB_PORT

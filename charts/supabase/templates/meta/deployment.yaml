@@ -35,6 +35,44 @@ spec:
           image: "{{ .Values.meta.image.repository }}:{{ .Values.meta.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.meta.image.pullPolicy }}
           env:
+            - name: DB_HOST
+              {{- if .Values.db.enabled }}
+              value: {{ include "supabase.db.fullname" . | quote }}
+              {{- else if .Values.secret.db.host }}
+              value: {{ .Values.secret.db.host | quote }}
+              {{- else }}
+              value: {{ .Values.meta.environment.DB_HOST | quote }}
+              {{- end }}
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.secret.db.superuser.secretRef }}
+                  name: {{ .Values.secret.db.superuser.secretRef }}
+                  key: {{ .Values.secret.db.superuser.secretRefKey.database | default "database" }}
+                  {{- else }}
+                  name: {{ include "supabase.secret.db.superuser" . }}
+                  key: database
+                  {{- end }}
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.secret.db.superuser.secretRef }}
+                  name: {{ .Values.secret.db.superuser.secretRef }}
+                  key: {{ .Values.secret.db.superuser.secretRefKey.password | default "password" }}
+                  {{- else }}
+                  name: {{ include "supabase.secret.db.superuser" . }}
+                  key: password
+                  {{- end }}
+            - name: DB_PASSWORD_ENC
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.secret.db.superuser.secretRef }}
+                  name: {{ .Values.secret.db.superuser.secretRef }}
+                  key: {{ .Values.secret.db.superuser.secretRefKey.password | default "password" }}
+                  {{- else }}
+                  name: {{ include "supabase.secret.db.superuser" . }}
+                  key: password_encoded
+                  {{- end }}
             {{- range $key, $value := .Values.meta.environment }}
             - name: {{ $key }}
               {{- if kindIs "map" $value }}

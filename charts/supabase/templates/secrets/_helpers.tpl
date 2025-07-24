@@ -20,13 +20,6 @@ Expand the name of the studio secret.
 {{- end -}}
 
 {{/*
-Expand the name of the database secret.
-*/}}
-{{- define "supabase.secret.db" -}}
-{{- printf "%s-db" (include "supabase.fullname" .) }}
-{{- end -}}
-
-{{/*
 Expand the name of the analytics secret.
 */}}
 {{- define "supabase.secret.analytics" -}}
