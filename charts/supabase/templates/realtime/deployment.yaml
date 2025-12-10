@@ -52,7 +52,7 @@ spec:
                   key: username
                   {{- end }}
             - name: DB_PORT
-              value: {{ .Values.analytics.environment.DB_PORT | quote }}
+              value: {{ .Values.realtime.environment.DB_PORT | quote }}
             {{- range $key, $value := .Values.realtime.initContainerEnvironment }}
             - name: {{ $key }}
               {{- if kindIs "map" $value }}
