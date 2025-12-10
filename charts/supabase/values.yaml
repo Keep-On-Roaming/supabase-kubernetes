@@ -140,6 +140,7 @@ studio:
     type: ClusterIP
     port: 3000
   environment:
+    DB_PORT: 5432
     STUDIO_PORT: "3000"
     NEXT_PUBLIC_ENABLE_LOGS: "true"
     # Set value to bigquery to use Big Query backend for analytics

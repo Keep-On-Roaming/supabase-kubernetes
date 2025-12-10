@@ -53,7 +53,7 @@ spec:
                   key: username
                   {{- end }}
             - name: DB_PORT
-              value: {{ .Values.analytics.environment.DB_PORT | quote }}
+              value: {{ .Values.storage.environment.DB_PORT | quote }}
             {{- range $key, $value := .Values.storage.initContainerEnvironment }}
             - name: {{ $key }}
               {{- if kindIs "map" $value }}

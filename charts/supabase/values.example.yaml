@@ -27,8 +27,8 @@ studio:
   image:
     tag: 20250224-d10db0f
   environment:
-    STUDIO_DEFAULT_ORGANIZATION: "My Organization"
-    STUDIO_DEFAULT_PROJECT: "My Project"
+    DEFAULT_ORGANIZATION: "My Organization"
+    DEFAULT_PROJECT: "My Project"
     SUPABASE_PUBLIC_URL: http://example.com/
     NEXT_PUBLIC_ENABLE_LOGS: "true"
   livenessProbe:
