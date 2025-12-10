@@ -44,3 +44,10 @@ Check if both s3 keys are valid
 {{- printf "false" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Expand the name of the meta secret.
+*/}}
+{{- define "supabase.secret.meta" -}}
+{{- printf "%s-meta" (include "supabase.fullname" .) }}
+{{- end -}}
