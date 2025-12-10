@@ -20,6 +20,8 @@ secret:
       username: supabase_admin
       password: example123456
       database: postgres
+  meta:
+    cryptoKey: your-super-secret-meta-crypto-key-with-at-least-32-characters-long
 
 studio:
   image:

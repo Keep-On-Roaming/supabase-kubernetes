@@ -35,24 +35,60 @@ spec:
           image: "{{ .Values.studio.image.repository }}:{{ .Values.studio.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.studio.image.pullPolicy }}
           env:
+            {{- if .Values.meta.enabled }}
+            - name: STUDIO_PG_META_URL
+              value: http://{{ include "supabase.meta.fullname" . }}:{{ .Values.meta.service.port }}
+            - name: DB_HOST
+              {{- if .Values.db.enabled }}
+              value: {{ include "supabase.db.fullname" . | quote }}
+              {{- else if .Values.secret.db.host }}
+              value: {{ .Values.secret.db.host | quote }}
+              {{- else }}
+              value: {{ .Values.meta.environment.DB_HOST | quote }}
+              {{- end }}
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.secret.db.superuser.secretRef }}
+                  name: {{ .Values.secret.db.superuser.secretRef }}
+                  key: {{ .Values.secret.db.superuser.secretRefKey.database | default "database" }}
+                  {{- else }}
+                  name: {{ include "supabase.secret.db.superuser" . }}
+                  key: database
+                  {{- end }}
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.secret.db.superuser.secretRef }}
+                  name: {{ .Values.secret.db.superuser.secretRef }}
+                  key: {{ .Values.secret.db.superuser.secretRefKey.password | default "password" }}
+                  {{- else }}
+                  name: {{ include "supabase.secret.db.superuser" . }}
+                  key: password
+                  {{- end }}
+            - name: POSTGRES_HOST
+              value: $(DB_HOST)
+            - name: POSTGRES_PORT
+              value: $(DB_PORT)
+            - name: POSTGRES_DB
+              value: $(DB_NAME)
+            - name: POSTGRES_PASSWORD
+              value: $(DB_PASSWORD)
+            - name: CRYPTO_KEY
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.secret.meta.secretRef }}
+                  name: {{ .Values.secret.meta.secretRef }}
+                  key: {{ .Values.secret.meta.secretRefKey.cryptoKey | default "cryptoKey" }}
+                  {{- else }}
+                  name: {{ include "supabase.secret.meta" . }}
+                  key: cryptoKey
+                  {{- end }}
+            {{- end }}
             {{- if .Values.kong.enabled }}
             - name: SUPABASE_URL
               value: http://{{ include "supabase.kong.fullname" . }}:{{ .Values.kong.service.port }}
             {{- end }}
-            {{- if .Values.meta.enabled }}
-            - name: STUDIO_PG_META_URL
-              value: http://{{ include "supabase.meta.fullname" . }}:{{ .Values.meta.service.port }}
-            {{- end }}
-            - name: AUTH_JWT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  {{- if .Values.secret.jwt.secretRef }}
-                  name: {{ .Values.secret.jwt.secretRef }}
-                  key: {{ .Values.secret.jwt.secretRefKey.secret | default "secret" }}
-                  {{- else }}
-                  name: {{ include "supabase.secret.jwt" . }}
-                  key: secret
-                  {{- end }}
             - name: SUPABASE_ANON_KEY
               valueFrom:
                 secretKeyRef:
@@ -72,6 +108,16 @@ spec:
                   {{- else }}
                   name: {{ include "supabase.secret.jwt" . }}
                   key: serviceKey
+                  {{- end }}
+            - name: AUTH_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.secret.jwt.secretRef }}
+                  name: {{ .Values.secret.jwt.secretRef }}
+                  key: {{ .Values.secret.jwt.secretRefKey.secret | default "secret" }}
+                  {{- else }}
+                  name: {{ include "supabase.secret.jwt" . }}
+                  key: secret
                   {{- end }}
             {{- if .Values.analytics.enabled }}
             - name: LOGFLARE_URL

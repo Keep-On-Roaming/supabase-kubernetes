@@ -73,6 +73,16 @@ spec:
                   name: {{ include "supabase.secret.db.superuser" . }}
                   key: password_encoded
                   {{- end }}
+            - name: CRYPTO_KEY
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.secret.meta.secretRef }}
+                  name: {{ .Values.secret.meta.secretRef }}
+                  key: {{ .Values.secret.meta.secretRefKey.cryptoKey | default "cryptoKey" }}
+                  {{- else }}
+                  name: {{ include "supabase.secret.meta" . }}
+                  key: cryptoKey
+                  {{- end }}
             {{- range $key, $value := .Values.meta.environment }}
             - name: {{ $key }}
               {{- if kindIs "map" $value }}

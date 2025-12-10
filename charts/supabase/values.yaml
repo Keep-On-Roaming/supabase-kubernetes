@@ -93,6 +93,14 @@ secret:
         username: username
         password: password
         database: database
+  # crypto key for meta service
+  meta:
+    cryptoKey: ""
+    # specify existing secret, which takes precedence over variables above
+    secretRef: ""
+    # override secret keys for existing secret refs
+    secretRefKey:
+      cryptoKey: cryptoKey
 
 # Studio Application
 studio:
